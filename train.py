@@ -12,6 +12,9 @@ def trainer_accelerate(train_dataloader, val_dataloader, model, num_epochs, log_
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
+    train_num_samples = 0
+    val_num_samples = 0
+
     for epoch in range(num_epochs):
         print(f"Epoch {epoch} | Training")
 
@@ -34,10 +37,13 @@ def trainer_accelerate(train_dataloader, val_dataloader, model, num_epochs, log_
             train_loss.append(loss.item())
             loss.backward()
 
+            batch_size = batch["pixel_values"].size(0)
+            train_num_samples += batch_size
+
             if step % log_step == 0:
-                print("  Training loss: ", round(sum(train_loss) / len(train_loss), 6))
-                train_log_step_loss = round(sum(train_loss) / len(train_loss), 6)
-                writer.add_scalar("Avg Train Loss at Step", train_log_step_loss, step)
+                avg_train_loss = round(sum(train_loss) / len(train_loss), 6)
+                print("  Training loss: ", avg_train_loss)
+                writer.add_scalar("Running Train Loss", avg_train_loss, train_num_samples)
 
             # Optimization
             optimizer.step()
@@ -59,10 +65,13 @@ def trainer_accelerate(train_dataloader, val_dataloader, model, num_epochs, log_
                 # Get validation loss
                 loss = outputs.loss
                 val_loss.append(loss.item())
+                batch_size = batch["pixel_values"].size(0)
+                val_num_samples += batch_size
+
                 if step % log_step == 0:
-                    print("  Validation loss: ", round(sum(val_loss) / len(val_loss), 6))
-                    val_log_step_loss = round(sum(val_loss) / len(val_loss), 6)
-                    writer.add_scalar("Avg Val Loss at Step", val_log_step_loss, step)
+                    avg_val_loss = round(sum(val_loss) / len(val_loss), 6)
+                    print("  Validation loss: ", avg_val_loss)
+                    writer.add_scalar("Avg Val Loss at Step", avg_val_loss, val_num_samples)
 
         # Average validation epoch loss
         val_loss = sum(val_loss) / len(val_loss)
