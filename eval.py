@@ -37,7 +37,7 @@ def evaluate_metric(id2label, preprocessor, test_dataloader, model, step_to_idx=
     print(f"{eval_metric}:", metric.compute(num_labels=len(id2label), ignore_index=0)[eval_metric])
 
 
-def initial_loss_and_eval_metric(id2label, preprocessor, val_dataloader, model, batch, step_to_idx):
+def initial_loss_and_eval_metric(model, batch):
     outputs = model(
         pixel_values=batch["pixel_values"],
         mask_labels=batch["mask_labels"],
@@ -45,5 +45,3 @@ def initial_loss_and_eval_metric(id2label, preprocessor, val_dataloader, model, 
     )
 
     print(outputs.loss)
-
-    evaluate_metric(id2label, preprocessor, val_dataloader, model, step_to_idx)

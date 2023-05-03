@@ -5,3 +5,5 @@ albumentations
 git+https://github.com/huggingface/transformers.git
 # We will use this to push our trained model to HF Hub
 huggingface_hub
+tensorboard
+torch-tb-profiler

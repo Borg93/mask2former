@@ -3,7 +3,10 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm.auto import tqdm
 
 
-def trainer_accelerate(train_dataloader, val_dataloader, model, device, num_epochs, log_step, lr):
+def trainer_accelerate(train_dataloader, val_dataloader, model, num_epochs, log_step, lr):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+
     # Tensorboard
     writer = SummaryWriter()
 
@@ -31,7 +34,7 @@ def trainer_accelerate(train_dataloader, val_dataloader, model, device, num_epoc
             train_loss.append(loss.item())
             loss.backward()
 
-            if step == log_step:
+            if step % log_step == 0:
                 print("  Training loss: ", round(sum(train_loss) / len(train_loss), 6))
                 train_log_step_loss = round(sum(train_loss) / len(train_loss), 6)
                 writer.add_scalar("Avg Train Loss at Step", train_log_step_loss, step)
@@ -56,7 +59,7 @@ def trainer_accelerate(train_dataloader, val_dataloader, model, device, num_epoc
                 # Get validation loss
                 loss = outputs.loss
                 val_loss.append(loss.item())
-                if step == log_step:
+                if step % log_step == 0:
                     print("  Validation loss: ", round(sum(val_loss) / len(val_loss), 6))
                     val_log_step_loss = round(sum(val_loss) / len(val_loss), 6)
                     writer.add_scalar("Avg Val Loss at Step", val_log_step_loss, step)

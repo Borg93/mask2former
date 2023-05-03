@@ -78,16 +78,14 @@ def main(batch_size, num_epochs, log_step, step_to_idx, lr):
         cache_dir=local_cache_dir,
     )
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.to(device)
+    initial_loss_and_eval_metric(model, batch)
 
-    initial_loss_and_eval_metric(id2label, preprocessor, val_dataloader, model, batch, step_to_idx)
-
-    model = trainer_accelerate(train_dataloader, val_dataloader, model, device, num_epochs, log_step, lr)
+    model = trainer_accelerate(train_dataloader, val_dataloader, model, num_epochs, log_step, lr)
 
     evaluate_metric(id2label, preprocessor, val_dataloader, model, step_to_idx)
 
     model.save_pretrained("./.model")
+    preprocessor.save_pretrained("./.model")
 
 
 if __name__ == "__main__":
